@@ -1,10 +1,10 @@
 # ChatGPT 批量自动注册工具
 
-> 使用 DuckMail 临时邮箱，并发自动注册 ChatGPT 账号
+> 使用 freemail 工作器创建临时邮箱，并发自动注册 ChatGPT 账号
 
 ## 功能
 
-- 📨 自动创建临时邮箱 (DuckMail)
+- 📨 自动创建临时邮箱 (freemail 工作器)
 - 📥 自动获取 OTP 验证码
 - ⚡ 支持并发注册多个账号
 - 🔄 自动处理 OAuth 登录
@@ -22,8 +22,8 @@ pip install curl_cffi
 ```json
 {
   "total_accounts": 5,
-  "duckmail_api_base": "https://api.duckmail.sbs",
-  "duckmail_bearer": "你的 DuckMail API Token",
+  "freemail_worker_domain": "",
+  "freemail_token": "",
   "proxy": "http://127.0.0.1:7890",
   "output_file": "registered_accounts.txt",
   "enable_oauth": true,
@@ -36,7 +36,7 @@ pip install curl_cffi
 | 配置项 | 说明 |
 |--------|------|
 | total_accounts | 注册账号数量 |
-| duckmail_bearer | DuckMail API Token |
+| freemail_worker_domain / freemail_token | freemail 工作器域名与 Token |
 | proxy | 代理地址 (可选) |
 | output_file | 输出账号文件 |
 | enable_oauth | 启用 OAuth 登录 |
@@ -82,6 +82,6 @@ chatgpt_register/
 ## 注意事项
 
 - 需要有效的代理才能注册成功
-- DuckMail API Token 需要从 https://duckmail.sbs 获取
+* freemail 工作器信息由你或服务提供方提供
 - 建议使用代理避免 IP 被封
 - 使用 CPA 面板需要先部署面板服务
