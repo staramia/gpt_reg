@@ -76,20 +76,20 @@ class EmailService:
             pass
 
 
-def create_temp_email(duckmail_api_base, duckmail_bearer, default_proxy, freemail_worker_domain, freemail_token, user_agent=None):
-    os.environ["WORKER_DOMAIN"] = freemail_worker_domain
-    os.environ["FREEMAIL_TOKEN"] = freemail_token
-    proxies = {"http": default_proxy, "https": default_proxy} if default_proxy else None
-    service = EmailService(proxies=proxies)
-    return service.create_email()
+def create_temp_email(default_proxy, freemail_worker_domain, freemail_token, user_agent=None):
+        os.environ["WORKER_DOMAIN"] = freemail_worker_domain
+        os.environ["FREEMAIL_TOKEN"] = freemail_token
+        proxies = {"http": default_proxy, "https": default_proxy} if default_proxy else None
+        service = EmailService(proxies=proxies)
+        return service.create_email()
 
 
-def wait_for_verification_email(duckmail_api_base, mail_token, timeout=120, user_agent=None, proxy=None, freemail_worker_domain=None, freemail_token=None):
+def wait_for_verification_email(mail_token, timeout=30, user_agent=None, proxy=None, freemail_worker_domain=None, freemail_token=None):
     os.environ["WORKER_DOMAIN"] = freemail_worker_domain
     os.environ["FREEMAIL_TOKEN"] = freemail_token
     proxies = {"http": proxy, "https": proxy} if proxy else None
     service = EmailService(proxies=proxies)
-    
+
     start_time = time.time()
     while time.time() - start_time < timeout:
         code = service.fetch_verification_code(mail_token, max_attempts=1)

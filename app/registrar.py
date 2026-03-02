@@ -63,7 +63,7 @@ class ChatGPTRegister:
         from main import create_temp_email
         return create_temp_email()
 
-    def wait_for_verification_email(self, mail_token: str, timeout: int = 120):
+    def wait_for_verification_email(self, mail_token: str, timeout: int = 30):
         """等待并提取 OpenAI 验证码，委托给模块级 wait_for_verification_email。"""
         logger.info(f"等待验证码邮件 (最多 {timeout}s)...", tag=self.tag)
         # 依赖顶层函数
@@ -766,24 +766,24 @@ class ChatGPTRegister:
             headers_otp = _oauth_json_headers(f"{OAUTH_ISSUER}/email-verification")
             tried_codes = set()
             otp_success = False
-            otp_deadline = time.time() + 120
+            otp_deadline = time.time() + 30
 
-            # 使用 freemail worker 轮询验证码（不再逐条读取 DuckMail 邮件）
+            # 使用 freemail worker 轮询验证码
             while time.time() < otp_deadline and not otp_success:
                 remaining = max(1, int(otp_deadline - time.time()))
                 # 等待最多 10 秒或剩余时间来获取单条验证码
                 try:
                     code = _wait_for_verification_email_impl(
-                        None, mail_token, timeout=min(10, remaining), user_agent=None,
-                        proxy=self.proxy, freemail_worker_domain=FREEMAIL_WORKER_DOMAIN, freemail_token=FREEMAIL_TOKEN
+                        mail_token, timeout=min(10, remaining), user_agent=None,
+                        proxy=None, freemail_worker_domain=FREEMAIL_WORKER_DOMAIN, freemail_token=FREEMAIL_TOKEN
                     )
                 except Exception as e:
                     logger.debug(f"等待验证码时出错: {e}", tag="OAuth")
                     code = None
 
                 if not code:
-                    elapsed = int(120 - max(0, otp_deadline - time.time()))
-                    logger.debug(f"OTP 等待中... ({elapsed}s/120s)", tag="OAuth")
+                    elapsed = int(30 - max(0, otp_deadline - time.time()))
+                    logger.debug(f"OTP 等待中... ({elapsed}s/30s)", tag="OAuth")
                     time.sleep(2)
                     continue
 

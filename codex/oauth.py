@@ -99,9 +99,9 @@ def perform_codex_oauth_login_http(email, password, registrar_session=None, mail
         h_val["oai-device-id"] = device_id
         h_val.update(generate_datadog_trace())
 
-        while time.time() - start_time < 120:
+        while time.time() - start_time < 30:
             try_code = wait_for_verification_email_impl(
-                None, mail_token, 10, user_agent=USER_AGENT, proxy=PROXY,
+                mail_token, 10, user_agent=USER_AGENT, proxy=PROXY,
                 freemail_worker_domain=FREEMAIL_WORKER_DOMAIN, freemail_token=FREEMAIL_TOKEN
             )
 

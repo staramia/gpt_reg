@@ -158,9 +158,10 @@ def create_temp_email():
         user_agent = _random_chrome_version()[3]
     except Exception:
         user_agent = None
-    # DUCKMAIL 参数已移除 — 传入 None 以兼容 core.emailing 的签名
+
+    # 邮箱无需走全局代理，强制直连（传入 None）以避免被代理影响
     email, mail_token = _create_temp_email_impl(
-        None, None, DEFAULT_PROXY, FREEMAIL_WORKER_DOMAIN, FREEMAIL_TOKEN, user_agent=user_agent
+        None, FREEMAIL_WORKER_DOMAIN, FREEMAIL_TOKEN, user_agent=user_agent
     )
     return email, mail_token
 
@@ -188,19 +189,19 @@ def _extract_verification_code(email_content: str):
     return None
 
 
-def wait_for_verification_email(mail_token: str, timeout: int = 120):
+def wait_for_verification_email(mail_token: str, timeout: int = 30):
     """等待并提取 OpenAI 验证码，委托给 core.emailing.wait_for_verification_email。"""
     user_agent = None
     try:
         user_agent = _random_chrome_version()[3]
     except Exception:
         user_agent = None
+    # 邮箱轮询也不走代理（直连），其他网络请求仍然使用全局代理
     return _wait_for_verification_email_impl(
-        None,
         mail_token,
         timeout,
         user_agent=user_agent,
-        proxy=DEFAULT_PROXY,
+        proxy=None,
         freemail_worker_domain=FREEMAIL_WORKER_DOMAIN,
         freemail_token=FREEMAIL_TOKEN,
     )

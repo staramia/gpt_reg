@@ -10,7 +10,7 @@ def _load_config(base_path):
         "freemail_worker_domain": "",
         "freemail_token": "",
         "proxy": "",
-        "output_file": "registered_accounts.txt",
+        "output_file": "",
         "enable_oauth": True,
         "oauth_required": True,
         "oauth_issuer": "https://auth.openai.com",

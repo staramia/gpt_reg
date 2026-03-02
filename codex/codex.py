@@ -146,7 +146,7 @@ def register_one(worker_id=0, task_index=0, total=1):
     # 注意：codex 工具现在将使用 freemail
     print("📧 创建临时邮箱 (freemail)...")
     email, _, mail_token = create_temp_email_impl(
-        None, None, PROXY, FREEMAIL_WORKER_DOMAIN, FREEMAIL_TOKEN, user_agent=USER_AGENT
+        PROXY, FREEMAIL_WORKER_DOMAIN, FREEMAIL_TOKEN, user_agent=USER_AGENT
     )
     if not email:
         return None, None, False, 0, 0
@@ -158,7 +158,7 @@ def register_one(worker_id=0, task_index=0, total=1):
     # ProtocolRegistrar 需要一个方法来获取验证码
     def _wait_for_code_wrapper():
         return wait_for_verification_email_impl(
-            None, mail_token, 120, user_agent=USER_AGENT, proxy=PROXY, 
+            mail_token, 30, user_agent=USER_AGENT, proxy=PROXY, 
             freemail_worker_domain=FREEMAIL_WORKER_DOMAIN, freemail_token=FREEMAIL_TOKEN
         )
     
