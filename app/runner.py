@@ -5,9 +5,11 @@ import importlib
 import time
 import traceback
 from concurrent.futures import ThreadPoolExecutor, as_completed
+import os
+import datetime
 
 
-def _register_one(idx, total, proxy, output_file):
+def _register_one(idx, total, proxy, output_file, token_json_dir, ak_file, rk_file):
     """单个注册任务（在线程中运行）。对主模块做延迟导入以避免循环导入问题。
     返回 (ok, email, error_message)
     """
@@ -52,7 +54,7 @@ def _register_one(idx, total, proxy, output_file):
             if oauth_ok:
                 save_fn = getattr(mod, "_save_codex_tokens", None)
                 if save_fn:
-                    save_fn(email, tokens)
+                    save_fn(email, tokens, token_json_dir, ak_file, rk_file)
 
         with _file_lock:
             with open(output_file, "a", encoding="utf-8") as out:
@@ -84,15 +86,24 @@ def run_batch(total_accounts: int = 3, output_file="registered_accounts.txt",
     """并发批量注册 - freemail 临时邮箱版（从 app 运行）
     使用延迟导入读取配置以保持与现有模块兼容。
     """
+    # 创建新的输出目录
+    timestamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+    output_dir_name = f"{timestamp}-{total_accounts}"
+    output_dir = os.path.join("output", output_dir_name)
+    os.makedirs(output_dir, exist_ok=True)
+
+    # 更新文件路径
+    accounts_file = os.path.join(output_dir, "registered_accounts.txt")
+    token_json_dir = os.path.join(output_dir, "codex_tokens")
+    ak_file = os.path.join(output_dir, "ak.txt")
+    rk_file = os.path.join(output_dir, "rk.txt")
+
     mod = importlib.import_module("chatgpt_register")
     FREEMAIL_WORKER_DOMAIN = getattr(mod, "FREEMAIL_WORKER_DOMAIN", "")
     ENABLE_OAUTH = getattr(mod, "ENABLE_OAUTH", True)
     OAUTH_ISSUER = getattr(mod, "OAUTH_ISSUER", "")
     OAUTH_CLIENT_ID = getattr(mod, "OAUTH_CLIENT_ID", "")
-    TOKEN_JSON_DIR = getattr(mod, "TOKEN_JSON_DIR", "")
-    AK_FILE = getattr(mod, "AK_FILE", "")
-    RK_FILE = getattr(mod, "RK_FILE", "")
-
+    
     actual_workers = min(max_workers, total_accounts)
     print(f"\n{'#'*60}")
     print(f"  ChatGPT 批量自动注册 (freemail 临时邮箱版)")
@@ -102,8 +113,7 @@ def run_batch(total_accounts: int = 3, output_file="registered_accounts.txt",
     if ENABLE_OAUTH:
         print(f"  OAuth Issuer: {OAUTH_ISSUER}")
         print(f"  OAuth Client: {OAUTH_CLIENT_ID}")
-        print(f"  Token输出: {TOKEN_JSON_DIR}/, {AK_FILE}, {RK_FILE}")
-    print(f"  输出文件: {output_file}")
+    print(f"  输出目录: {output_dir}")
     print(f"{'#'*60}\n")
 
     success_count = 0
@@ -113,7 +123,7 @@ def run_batch(total_accounts: int = 3, output_file="registered_accounts.txt",
     with ThreadPoolExecutor(max_workers=actual_workers) as executor:
         futures = {}
         for idx in range(1, total_accounts + 1):
-            future = executor.submit(_register_one, idx, total_accounts, proxy, output_file)
+            future = executor.submit(_register_one, idx, total_accounts, proxy, accounts_file, token_json_dir, ak_file, rk_file)
             futures[future] = idx
 
         for future in as_completed(futures):
@@ -136,5 +146,5 @@ def run_batch(total_accounts: int = 3, output_file="registered_accounts.txt",
     print(f"  总数: {total_accounts} | 成功: {success_count} | 失败: {fail_count}")
     print(f"  平均速度: {avg:.1f} 秒/个")
     if success_count > 0:
-        print(f"  结果文件: {output_file}")
+        print(f"  结果文件: {accounts_file}")
     print(f"{'#'*60}")

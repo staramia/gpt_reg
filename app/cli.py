@@ -2,6 +2,7 @@
 该模块做延迟导入以使用原来模块的默认常量（保持行为一致）。
 """
 import importlib
+import os
 
 
 def main():
@@ -64,7 +65,7 @@ def main():
 
     from .runner import run_batch
 
-    run_batch(total_accounts=total_accounts, output_file=DEFAULT_OUTPUT_FILE,
+    run_batch(total_accounts=total_accounts,
               max_workers=max_workers, proxy=proxy)
 
 

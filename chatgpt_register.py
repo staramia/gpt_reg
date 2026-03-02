@@ -94,31 +94,32 @@ def _decode_jwt_payload(token: str):
 def _generate_password(length=14):
     return _generate_password_impl(length)
 
-def _save_codex_tokens(email, tokens):
-    """保存 Codex OAuth tokens 到 JSON 文件，并可选上传。"""
-    if not os.path.exists(TOKEN_JSON_DIR):
-        os.makedirs(TOKEN_JSON_DIR)
-    
+def _save_codex_tokens(email, tokens, token_json_dir, ak_file, rk_file):
+    """保存 Codex OAuth tokens 到指定路径的 JSON 文件。"""
+    if not os.path.exists(token_json_dir):
+        os.makedirs(token_json_dir)
+
     email_prefix = email.split("@")[0]
     ts = int(time.time())
     fname = f"{email_prefix}_{ts}.json"
-    fpath = os.path.join(TOKEN_JSON_DIR, fname)
-    
+    fpath = os.path.join(token_json_dir, fname)
+
     with open(fpath, "w", encoding="utf-8") as f:
         json.dump(tokens, f, indent=2)
-    
+
     ak = tokens.get("access_token")
     rk = tokens.get("refresh_token")
-    
-    if ak and AK_FILE:
+
+    if ak and ak_file:
         with _file_lock:
-            with open(AK_FILE, "a", encoding="utf-8") as f:
+            with open(ak_file, "a", encoding="utf-8") as f:
                 f.write(f"{ak}\n")
-    
-    if rk and RK_FILE:
+
+    if rk and rk_file:
         with _file_lock:
-            with open(RK_FILE, "a", encoding="utf-8") as f:
+            with open(rk_file, "a", encoding="utf-8") as f:
                 f.write(f"{rk}\n")
+
 
 # expose sentinel helpers under original names for backward compatibility
 fetch_sentinel_challenge = fetch_sentinel_challenge_impl
