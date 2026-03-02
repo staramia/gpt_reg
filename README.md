@@ -1,8 +1,8 @@
-# ChatGPT 批量自动注册工具
+## ChatGPT 批量自动注册工具
 
 > 使用 [freemail](https://github.com/idinging/freemail) 创建临时邮箱，并发自动注册 ChatGPT 账号
 
-## 功能
+### 功能
 
 - 📨 自动创建临时邮箱 (freemail 工作器)
 - 📥 自动获取 OTP 验证码
@@ -11,14 +11,17 @@
 - ☁️ 支持代理配置
 - 📤 支持上传账号到 Codex / CPA 面板
 
-## 环境
+---
+
+### 环境
 
 ```bash
 uv venv --python 3.12
 uv pip install -r requirements.txt
 ```
 然后确保你有 [freemail](https://github.com/idinging/freemail) 服务（如果没有，请先部署一个） 
-## 配置 (config.json)
+
+### 配置 (config.json)
 
 ```json
 {
@@ -68,28 +71,21 @@ uv pip install -r requirements.txt
 
 说明：脚本对多数配置项提供默认值（见 `config.json`），你只需填写与运行环境相关的项，例如 `freemail_worker_domain`、`freemail_token`、以及代理/上传相关设置。
 
-## CPA 面板集成 (TODO)
+---
 
-注册完成后，可以自动上传账号到 CPA 面板：
-
-| 配置项 | 说明 | 参考 |
-|--------|------|------|
-| upload_api_url | CPA 面板上传 API 地址 | https://help.router-for.me/cn/ |
-| upload_api_token | CPA 面板登录密码 | 你的 CPA 面板密码 |
-
-> CPA 面板仓库:  [CPA-Dashboard](https://github.com/dongshuyan/CPA-Dashboard)
-
-## 使用
+### 使用
 
 ```bash
 uv run main.py
 ```
 
-## 输出
+### 输出
 
 注册成功的账号会保存到 `output/[时间戳]-[数量]/accounts.txt`
 
-## 目录结构
+---
+
+### 目录结构
 
 ```
 chatgpt_register/
@@ -123,8 +119,31 @@ chatgpt_register/
 └── README.md               # 本文档
 ```
 
-## 注意事项
+---
+
+### CPA 面板集成
+
+注册完成后，可以手动上传`output`目录里的账号到 [CPA](https://help.router-for.me/cn/) 面板。  
+  
+配置好以下：
+
+| 配置项 | 说明 | 参考 |
+|--------|------|------|
+| upload_api_url | CPA 面板上传 API 地址 | http://localhost:8317/v0/management/auth-files |
+| upload_api_token | CPA 面板登录密码 | 你的 CPA 面板明文密码 |
+
+> CPA 面板仓库:  [CPA-Dashboard](https://github.com/dongshuyan/CPA-Dashboard)  
+  
+然后：
+```bash
+uv run upload.py
+```
+
+
+### 注意事项
 
 - 别忘了 [freemail](https://github.com/idinging/freemail) 
 - 建议使用代理避免 IP 被封
 - 使用 CPA 面板需要先部署面板服务
+
+---

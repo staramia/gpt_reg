@@ -107,7 +107,22 @@ def _save_codex_tokens(email, tokens, token_json_dir, ak_file, rk_file):
     fpath = os.path.join(token_json_dir, fname)
 
     with open(fpath, "w", encoding="utf-8") as f:
-        json.dump(tokens, f, indent=2)
+        # Ensure exported JSON contains the expected fields for CPA 导入
+        export = dict(tokens or {})
+        # 标记类型为 codex（导入规则要求）
+        if not export.get("type"):
+            export["type"] = "codex"
+        # token_type 通常为 bearer，确保为小写并存在
+        tt = export.get("token_type")
+        if tt:
+            export["token_type"] = str(tt).lower()
+        else:
+            export["token_type"] = "bearer"
+        # 确保 scope 包含必须的权限字符串（若服务端返回了则不覆盖）
+        if not export.get("scope"):
+            export["scope"] = "openid profile email offline_access"
+
+        json.dump(export, f, indent=2)
 
     ak = tokens.get("access_token")
     rk = tokens.get("refresh_token")
