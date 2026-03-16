@@ -73,6 +73,20 @@ uv pip install -r requirements.txt
 
 ---
 
+### 一键运行
+
+如果你希望全流程自动化（无需在交互过程中手动按回车），可以直接运行 `gpt.py`：
+
+```bash
+uv run gpt.py
+```
+
+它会依次执行：
+
+1. `uv run main.py`（自动按默认配置推进至完成）
+2. `uv run upload.py`
+3. 清空 `output/` 目录里的所有文件/子目录（保留 `output/` 目录本身）
+
 ### 使用
 
 ```bash
