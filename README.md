@@ -1,0 +1,163 @@
+## ChatGPT 批量自动注册工具
+
+> 使用 [freemail](https://github.com/idinging/freemail) 创建临时邮箱，并发自动注册 ChatGPT 账号
+
+### 功能
+
+- 📨 自动创建临时邮箱 (freemail 工作器)
+- 📥 自动获取 OTP 验证码
+- ⚡ 支持并发注册多个账号
+- 🔄 自动处理 OAuth 登录
+- ☁️ 支持代理配置
+- 📤 支持上传账号到 Codex / CPA 面板
+
+---
+
+### 环境
+
+```bash
+uv venv --python 3.12
+uv pip install -r requirements.txt
+```
+然后确保你有 [freemail](https://github.com/idinging/freemail) 服务（如果没有，请先部署一个） 
+
+### 配置 (config.json)
+
+```json
+{
+  "_comment": "ChatGPT(freemail)",
+
+  "total_accounts": 12,
+  "concurrent_workers": 4,
+
+  "freemail_worker_domain": "your.freemail.domain",
+  "freemail_token": "your_freemail_JWT_token",
+
+  "proxy": "http://127.0.0.1:7890",
+
+  "output_file": "accounts.txt",
+  "log_level": "info",
+
+  "enable_oauth": true,
+  "oauth_issuer": "https://auth.openai.com",
+  "oauth_client_id": "app_EMoamEEZ73f0CkXaXp7hrann",
+  "oauth_redirect_uri": "http://localhost:1455/auth/callback",
+  "ak_file": "ak.txt",
+  "rk_file": "rk.txt",
+  "token_json_dir": "codex_tokens",
+  "upload_api_url": "http://localhost:8317/v0/management/auth-files",
+  "upload_api_token": "your_cpa_dashboard_password"
+}
+```
+
+| 配置项 | 说明 |
+|--------|------|
+| total_accounts | 要批量注册的账号数（脚本会尝试创建这么多账号） |
+| concurrent_workers | 并发工作线程数（用于同时注册多个账号） |
+| freemail_worker_domain | freemail 工作器域名（用于创建临时邮箱） |
+| freemail_token | freemail 的认证 token（JWT 或服务器提供的密钥） |
+| proxy | 全局 HTTP(s) 代理（可选），格式如 http://127.0.0.1:7890 |
+| output_file | 注册结果保存文件名（相对于 output/[timestamp]-[n]/） |
+| log_level | 日志级别，支持 debug/info/warn/error |
+| enable_oauth | 是否启用 OAuth 登录流程（true/false） |
+| oauth_issuer | OAuth 授权服务器基地址（通常 https://auth.openai.com） |
+| oauth_client_id | OAuth 客户端 ID（用于 Codex/oauth 流程） |
+| oauth_redirect_uri | OAuth 回调地址（需与客户端配置一致） |
+| ak_file | Access Key 保存文件名（可留空） |
+| rk_file | Refresh Key 保存文件名（可留空） |
+| token_json_dir | 保存 token JSON 的目录（相对于 output/） |
+| upload_api_url | 可选：向 CPA 面板上传账号的 API 地址（留空则不上传） |
+| upload_api_token | 可选：上传接口的授权 token（留空则不上传） |
+
+说明：脚本对多数配置项提供默认值（见 `config.json`），你只需填写与运行环境相关的项，例如 `freemail_worker_domain`、`freemail_token`、以及代理/上传相关设置。
+
+---
+
+### 一键运行
+
+如果你希望全流程自动化（无需在交互过程中手动按回车），可以直接运行 `gpt.py`：
+
+```bash
+uv run gpt.py
+```
+
+它会依次执行：
+
+1. `uv run main.py`（自动按默认配置推进至完成）
+2. `uv run upload.py`
+3. 清空 `output/` 目录里的所有文件/子目录（保留 `output/` 目录本身）
+
+### 使用
+
+```bash
+uv run main.py
+```
+
+### 输出
+
+注册成功的账号会保存到 `output/[时间戳]-[数量]/accounts.txt`
+
+---
+
+### 目录结构
+
+```
+chatgpt_register/
+├── main.py                 # 主程序入口
+├── app/                    # 应用逻辑
+│   ├── cli.py              # 命令行交互
+│   ├── registrar.py        # 单次注册流程
+│   └── runner.py           # 并发任务调度
+├── core/                   # 核心工具
+│   ├── config.py           # 配置加载
+│   ├── emailing.py         # 邮箱服务适配
+│   ├── logger.py           # 日志模块
+│   └── utils.py            # 通用工具
+├── codex/                  # Codex 协议工具
+│   ├── codex.py
+│   ├── oauth.py
+│   ├── registrar.py
+│   ├── sentinel.py
+│   ├── utils.py
+│   └── README.md
+├── output/                 # 输出目录
+│   └── [时间戳]-[数量]/
+│       ├── registered_accounts.txt
+│       ├── ak.txt
+│       ├── rk.txt
+│       └── codex_tokens/
+├── config.json             # 配置文件
+├── config.json.example     # 配置示例
+├── requirements.txt        # 依赖列表
+├── upload.py               # 可选：上传/集成脚本
+└── README.md               # 本文档
+```
+
+---
+
+### CPA 面板集成
+
+注册完成后，可以手动上传`output`目录里的账号到 [CPA](https://help.router-for.me/cn/) 面板。  
+  
+配置好以下：
+
+| 配置项 | 说明 | 参考 |
+|--------|------|------|
+| upload_api_url | CPA 面板上传 API 地址 | http://localhost:8317/v0/management/auth-files |
+| upload_api_token | CPA 面板登录密码 | 你的 CPA 面板明文密码 |
+
+> CPA 面板仓库:  [CPA-Dashboard](https://github.com/dongshuyan/CPA-Dashboard)  
+  
+然后：
+```bash
+uv run upload.py
+```
+
+
+### 注意事项
+
+- 别忘了 [freemail](https://github.com/idinging/freemail) 
+- 建议使用代理避免 IP 被封
+- 使用 CPA 面板需要先部署面板服务
+
+---
